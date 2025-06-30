@@ -1,0 +1,19 @@
+# Go build artifacts
+/bin/
+*.exe
+*.out
+*.test
+
+# Local env
+.env
+.env.*
+
+# Coverage reports
+coverage.out
+
+# IDE settings
+.vscode/
+.idea/
+
+# OS junk
+.DS_Store
