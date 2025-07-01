@@ -1,0 +1,27 @@
+# .golangci.yml
+linters:
+  enable:
+    - govet
+    - staticcheck
+    - revive
+
+run:
+  timeout: 5m
+
+issues:
+  exclude-dirs:
+    - vendor
+    - pkg/mod
+    - Godeps
+    - build
+    - .git
+    - /usr/local/go/src  # 明確把 GOROOT src 排除
+  exclude-files:
+    - ".*_generated.go"
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+output:
+  formats:
+    - format: colored-line-number
+  print-issued-lines: true
