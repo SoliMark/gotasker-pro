@@ -2,8 +2,15 @@
 linters:
   enable:
     - govet
-    - staticcheck
+    - errcheck
     - revive
+    - gofmt
+  disable:
+    - staticcheck
+
+linters-settings:
+  errcheck:
+    exclude-functions: []
 
 run:
   timeout: 5m
