@@ -16,3 +16,20 @@ repos:
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
+
+  - repo: local
+    hooks:
+      - id: go-tidy
+        name: Run go mod tidy
+        entry: make tidy
+        language: system
+
+      - id: go-test
+        name: Run unit tests
+        entry: make test
+        language: system
+
+      - id: go-build
+        name: Run build
+        entry: make build
+        language: system
