@@ -1,16 +1,13 @@
 # ======================
 # GoTasker Pro Makefile
+# 全部透過 pre-commit hooks 執行
 # ======================
 
 APP_NAME := gotasker-pro
 
 .PHONY: tidy
 tidy:
-	go mod tidy
-
-.PHONY: lint
-lint:
-	pre-commit run golangci-lint --all-files
+	pre-commit run go-tidy --all-files
 
 .PHONY: fmt
 fmt:
@@ -20,17 +17,21 @@ fmt:
 vet:
 	pre-commit run go-vet --all-files
 
+.PHONY: lint
+lint:
+	pre-commit run golangci-lint --all-files
+
 .PHONY: check
 check:
 	pre-commit run --all-files
 
 .PHONY: test
 test:
-	go test -v ./... -count=1
+	pre-commit run go-test --all-files
 
 .PHONY: build
 build:
-	go build -o bin/$(APP_NAME) ./cmd/api
+	pre-commit run go-build --all-files
 
 .PHONY: run
 run:
