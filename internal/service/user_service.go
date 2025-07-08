@@ -1,14 +1,16 @@
 package service
 
 import (
+	"context"
 	"errors"
+
 	"github.com/SoliMark/gotasker-pro/internal/model"
 	"github.com/SoliMark/gotasker-pro/internal/repository"
 	"github.com/SoliMark/gotasker-pro/internal/util"
 )
 
 type UserService interface {
-	CreateUser(user *model.User) error
+	CreateUser(ctx context.Context, user *model.User) error
 }
 
 type userService struct {
@@ -19,8 +21,8 @@ func NewUserService(r repository.UserRepository) UserService {
 	return &userService{repo: r}
 }
 
-func (s *userService) CreateUser(user *model.User) error {
-	existing, _ := s.repo.FindByEmail(user.Email)
+func (s *userService) CreateUser(ctx context.Context, user *model.User) error {
+	existing, _ := s.repo.FindByEmail(ctx, user.Email)
 	if existing != nil {
 		return errors.New("email already registered")
 	}
@@ -30,5 +32,5 @@ func (s *userService) CreateUser(user *model.User) error {
 		return err
 	}
 	user.PasswordHash = hashedPassword
-	return s.repo.Create(user)
+	return s.repo.Create(ctx, user)
 }

@@ -41,6 +41,18 @@ run:
 clean:
 	rm -rf bin/
 
+.PHONY: mocks
+
+mocks:
+	mockgen -source=internal/service/user_service.go \
+		-destination=internal/service/mock_service/mock_user_service.go \
+		-package=mock_service
+
+	mockgen -source=internal/repository/user_repository.go \
+		-destination=internal/repository/mock_repository/mock_user_repository.go \
+		-package=mock_repository
+
+
 .PHONY: install-hooks
 install-hooks:
 	pre-commit install
