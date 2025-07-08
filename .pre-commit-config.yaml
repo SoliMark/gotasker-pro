@@ -8,8 +8,11 @@ repos:
     rev: v1.58.2
     hooks:
       - id: golangci-lint
-        args: [--config=.golangci.yml]
-        files: ^cmd/|^config/|^internal/
+        args:
+        - --config=.golangci.yml
+        - ./cmd/...
+        - ./config/...
+        - ./internal/...
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
@@ -42,3 +45,8 @@ repos:
       entry: go vet ./cmd/... ./config/... ./internal/...
       language: system
       pass_filenames: false
+
+    - id: generate-mocks
+      name: Generate gomock files
+      entry: make mocks
+      language: system

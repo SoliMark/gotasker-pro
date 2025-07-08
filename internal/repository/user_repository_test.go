@@ -1,6 +1,7 @@
 package repository_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/SoliMark/gotasker-pro/internal/model"
@@ -27,26 +28,28 @@ func TestUserRepository_CreateAndFind(t *testing.T) {
 	db := setupTestDB(t)
 	repo := repository.NewUserRepository(db)
 
+	ctx := context.Background()
+
 	user := &model.User{
 		Username:     "sol",
 		Email:        "sol@example.com",
 		PasswordHash: "hashedpassword",
 	}
 
-	err := repo.Create(user)
+	err := repo.Create(ctx, user)
 	assert.NoError(t, err)
 	assert.NotZero(t, user.ID)
 	assert.False(t, user.CreatedAt.IsZero())
 	assert.False(t, user.UpdatedAt.IsZero())
 	assert.Equal(t, user.CreatedAt, user.UpdatedAt)
 
-	found, err := repo.FindByEmail("sol@example.com")
+	found, err := repo.FindByEmail(ctx, "sol@example.com")
 	assert.NoError(t, err)
 	assert.Equal(t, "sol", found.Username)
 	assert.True(t, user.CreatedAt.Equal(found.CreatedAt))
 	assert.True(t, user.UpdatedAt.Equal(found.UpdatedAt))
 
-	foundByID, err := repo.FindByID(user.ID)
+	foundByID, err := repo.FindByID(ctx, user.ID)
 	assert.NoError(t, err)
 	assert.Equal(t, "sol", foundByID.Username)
 }

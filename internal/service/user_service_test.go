@@ -1,10 +1,11 @@
 package service
 
 import (
+	"context"
 	"testing"
 
 	"github.com/SoliMark/gotasker-pro/internal/model"
-	"github.com/SoliMark/gotasker-pro/internal/repository/mocks"
+	"github.com/SoliMark/gotasker-pro/internal/repository/mock_repository"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
@@ -13,11 +14,17 @@ func TestCreateUser_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockRepo := mocks.NewMockUserRepository(ctrl)
+	mockRepo := mock_repository.NewMockUserRepository(ctrl)
 
-	mockRepo.EXPECT().FindByEmail("test@example.com").Return(nil, nil)
+	ctx := context.Background()
 
-	mockRepo.EXPECT().Create(gomock.Any()).Return(nil)
+	mockRepo.EXPECT().
+		FindByEmail(ctx, "test@example.com").
+		Return(nil, nil)
+
+	mockRepo.EXPECT().
+		Create(ctx, gomock.Any()).
+		Return(nil)
 
 	svc := NewUserService(mockRepo)
 
@@ -26,7 +33,8 @@ func TestCreateUser_Success(t *testing.T) {
 		PasswordHash: "plaintextpassword",
 	}
 
-	err := svc.CreateUser(user)
+	err := svc.CreateUser(ctx, user)
 	assert.Nil(t, err)
 	assert.NotEqual(t, "plaintextpassword", user.PasswordHash)
+	assert.NotEmpty(t, user.PasswordHash)
 }
