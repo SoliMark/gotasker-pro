@@ -5,7 +5,7 @@ repos:
       - id: go-fmt
 
   - repo: https://github.com/golangci/golangci-lint
-    rev: v1.58.2
+    rev: v1.64.8
     hooks:
       - id: golangci-lint
         args:
