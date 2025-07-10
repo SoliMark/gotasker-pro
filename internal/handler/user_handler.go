@@ -12,15 +12,26 @@ type UserHandler struct {
 	UserService service.UserService
 }
 
-// input format
+// ==================== Register ====================
+
 type RegisterRequest struct {
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required,min=8"`
 }
 
-// reponse success
 type RegisterResponse struct {
 	Message string `json:"message"`
+}
+
+// ==================== Login ====================
+
+type LoginRequest struct {
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
+}
+
+type LoginResponse struct {
+	Token string `json:"token"`
 }
 
 type ErrorResponse struct {
@@ -50,5 +61,26 @@ func (h *UserHandler) Register(c *gin.Context) {
 
 	c.JSON(http.StatusOK, RegisterResponse{
 		Message: "User registered successfully",
+	})
+}
+
+func (h *UserHandler) Login(c *gin.Context) {
+	var req LoginRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, ErrorResponse{
+			Error: "Invaild request: " + err.Error(),
+		})
+		return
+	}
+
+	token, err := h.UserService.AuthenticateUser(c.Request.Context(), req.Email, req.Password)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, ErrorResponse{
+			Error: err.Error(),
+		})
+	}
+
+	c.JSON(http.StatusOK, LoginResponse{
+		Token: token,
 	})
 }
