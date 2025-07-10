@@ -38,6 +38,11 @@ func TestUserHandler_Register_Success(t *testing.T) {
 		CreateUser(gomock.Any(), gomock.Any()).
 		Return(nil)
 
+	mockSvc.
+		EXPECT().
+		AuthenticateUser(gomock.Any(), body.Email, body.Password).
+		Return("mocked.jwt.token", nil)
+
 	router := gin.Default()
 	router.POST("/register", userHandler.Register)
 
@@ -48,7 +53,7 @@ func TestUserHandler_Register_Success(t *testing.T) {
 	router.ServeHTTP(resp, req)
 
 	assert.Equal(t, http.StatusOK, resp.Code)
-	assert.Contains(t, resp.Body.String(), "User registered successfully")
+	assert.Contains(t, resp.Body.String(), "mocked.jwt.token")
 }
 
 func TestUserHandler_Login(t *testing.T) {

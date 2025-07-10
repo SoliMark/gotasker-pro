@@ -59,8 +59,15 @@ func (h *UserHandler) Register(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, RegisterResponse{
-		Message: "User registered successfully",
+	token, err := h.UserService.AuthenticateUser(c.Request.Context(), req.Email, req.Password)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, ErrorResponse{
+			Error: "Failed to generate token" + err.Error(),
+		})
+	}
+
+	c.JSON(http.StatusOK, LoginResponse{
+		Token: token,
 	})
 }
 
