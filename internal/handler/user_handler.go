@@ -38,6 +38,12 @@ type ErrorResponse struct {
 	Error string `json:"error"`
 }
 
+func NewUserHandler(userService service.UserService) *UserHandler {
+	return &UserHandler{
+		UserService: userService,
+	}
+}
+
 func (h *UserHandler) Register(c *gin.Context) {
 	var req RegisterRequest
 	if err := c.ShouldBindBodyWithJSON(&req); err != nil {
