@@ -7,6 +7,7 @@
 # Local env
 .env
 .env.*
+!.env.example
 
 # Coverage reports
 coverage.out
