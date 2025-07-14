@@ -5,31 +5,25 @@ import (
 	"log"
 
 	"github.com/SoliMark/gotasker-pro/internal/model"
-	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
-
-func InitDB() {
-	dsn := viper.GetString("DB_URL")
+func NewDB(dsn string) (*gorm.DB, error) {
 	if dsn == "" {
-		log.Fatal("DB_URL is not set")
+		return nil, fmt.Errorf("DB_URL is not set")
 	}
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-
 	if err != nil {
-		log.Fatalf("Failed to connect to DB: %v", err)
+		return nil, fmt.Errorf("failed to connect DB: %w", err)
 	}
 
 	err = db.AutoMigrate(&model.User{})
 	if err != nil {
-		log.Fatalf("Failed to migratet : %v", err)
+		return nil, fmt.Errorf("failed to auto migrate: %w", err)
 	}
 
-	fmt.Println("Connected to database successfully!")
-
-	DB = db
+	log.Println("Connected to database successfully!")
+	return db, nil
 }
