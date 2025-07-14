@@ -1,26 +1,49 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"net/http"
+
+	"github.com/gin-gonic/gin"
 
 	"github.com/SoliMark/gotasker-pro/config"
+	"github.com/SoliMark/gotasker-pro/internal/db"
+	"github.com/SoliMark/gotasker-pro/internal/handler"
+	"github.com/SoliMark/gotasker-pro/internal/middleware"
+	"github.com/SoliMark/gotasker-pro/internal/repository"
+	"github.com/SoliMark/gotasker-pro/internal/router"
+	"github.com/SoliMark/gotasker-pro/internal/service"
+	"github.com/SoliMark/gotasker-pro/internal/util"
 )
 
 func main() {
-	// 1. 載入設定
+	// Load config
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		log.Fatalf("faile to load config: %v", err)
+		log.Fatalf("cannot load config: %v", err)
 	}
 
-	http.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
-		if _, err := fmt.Fprintln(w, "Hello from GoTasker Pro!"); err != nil {
-			log.Printf("failed to write response: %v", err)
-		}
-	})
+	// Init DB
+	dbConn, err := db.NewDB(cfg.DBURL)
+	if err != nil {
+		log.Fatalf("cannot connect to DB: %v", err)
+	}
 
-	fmt.Printf("Server running on port %s\n", cfg.AppPort)
-	log.Fatal(http.ListenAndServe(":"+cfg.AppPort, nil))
+	// Init JWT Maker
+	jwtMaker := util.NewJWTMaker(cfg.JWTSecret)
+	if err != nil {
+		log.Fatalf("cannot create JWT maker: %v", err)
+	}
+
+	userRepo := repository.NewUserRepository(dbConn)
+	userService := service.NewUserService(userRepo, jwtMaker)
+	userHandler := handler.NewUserHandler(userService)
+	authMiddleware := middleware.JWTAuthMiddleware(jwtMaker)
+
+	r := gin.Default()
+
+	router.SetupRoutes(r, userHandler, authMiddleware)
+
+	if err := r.Run(":" + cfg.AppPort); err != nil {
+		log.Fatalf("failed to run server: %v", err)
+	}
 }

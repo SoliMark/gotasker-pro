@@ -10,8 +10,9 @@ import (
 )
 
 type Config struct {
-	AppPort string
-	DBURL   string
+	AppPort   string
+	DBURL     string
+	JWTSecret string
 }
 
 var (
@@ -36,9 +37,12 @@ func LoadConfig() (*Config, error) {
 			return
 		}
 
+		jwtSecret := viper.GetString("JWT_SECRET")
+
 		cfg = &Config{
-			AppPort: viper.GetString("PORT"),
-			DBURL:   dbURL,
+			AppPort:   viper.GetString("PORT"),
+			DBURL:     dbURL,
+			JWTSecret: jwtSecret,
 		}
 	})
 
