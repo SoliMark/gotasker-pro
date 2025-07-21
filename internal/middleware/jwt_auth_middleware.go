@@ -9,7 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func JWTAuthMiddleware(jwtMaker *util.JWTMaker) gin.HandlerFunc {
+type JWTMiddleware = gin.HandlerFunc
+
+func JWTAuthMiddleware(jwtMaker *util.JWTMaker) JWTMiddleware {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader(constant.HeaderAuthorization)
 		if authHeader == "" {
