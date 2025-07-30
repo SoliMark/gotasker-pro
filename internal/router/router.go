@@ -12,7 +12,7 @@ func SetupRoutes(r *gin.Engine, c *app.Container) {
 
 	// Protected routes with JWT
 	api := r.Group("/api")
-	api.Use(gin.HandlerFunc(c.JWTMiddleware))
+	api.Use(c.JWTMiddleware)
 	{
 		// User Profile
 		api.GET("/profile", c.UserHandler.Profile)
