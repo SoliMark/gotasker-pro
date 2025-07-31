@@ -52,6 +52,10 @@ mocks:
 		-destination=internal/repository/mock_repository/mock_user_repository.go \
 		-package=mock_repository
 
+	mockgen -source=internal/repository/task_repository.go \
+  		-destination=internal/repository/mock_repository/mock_task_repository.go \
+  		-package=mock_repository
+
 # ================================
 # 3. Pre-commit Hooks
 # ================================
