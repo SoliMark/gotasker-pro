@@ -11,7 +11,7 @@ import (
 type TaskService interface {
 	CreateTask(ctx context.Context, task *model.Task) error
 	GetTask(ctx context.Context, id uint) (*model.Task, error)
-	ListTask(ctx context.Context, userID uint) ([]*model.Task, error)
+	ListTasks(ctx context.Context, userID uint) ([]*model.Task, error)
 }
 
 type taskService struct {
@@ -33,6 +33,6 @@ func (s *taskService) GetTask(ctx context.Context, id uint) (*model.Task, error)
 	return s.repo.FindByID(ctx, id)
 }
 
-func (s *taskService) ListTask(ctx context.Context, userID uint) ([]*model.Task, error) {
+func (s *taskService) ListTasks(ctx context.Context, userID uint) ([]*model.Task, error) {
 	return s.repo.ListByUserID(ctx, userID)
 }
