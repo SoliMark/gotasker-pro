@@ -43,3 +43,47 @@ func TestTaskService_CreateTask(t *testing.T) {
 		assert.EqualError(t, err, "DB error")
 	})
 }
+
+func TestTaskService_UpdateTask(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mock_repository.NewMockTaskRepository(ctrl)
+	svc := service.NewTaskService(mockRepo)
+	ctx := context.Background()
+
+	t.Run("success", func(t *testing.T) {
+		task := &model.Task{
+			ID:     10,
+			UserID: 1,
+			Title:  "New Title",
+			Status: model.TaskStatusDone,
+		}
+		mockRepo.EXPECT().UpdateTask(ctx, task).Return(nil)
+
+		err := svc.UpdateTask(ctx, task)
+		assert.NoError(t, err)
+	})
+
+	t.Run("empty title -> error", func(t *testing.T) {
+		task := &model.Task{
+			ID:     10,
+			UserID: 1,
+			Title:  "",
+		}
+		err := svc.UpdateTask(ctx, task)
+		assert.EqualError(t, err, "title is required")
+	})
+
+	t.Run("repo error", func(t *testing.T) {
+		task := &model.Task{
+			ID:     10,
+			UserID: 1,
+			Title:  "X",
+		}
+		mockRepo.EXPECT().UpdateTask(ctx, task).Return(errors.New("db err"))
+
+		err := svc.UpdateTask(ctx, task)
+		assert.EqualError(t, err, "db err")
+	})
+}

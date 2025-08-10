@@ -93,7 +93,7 @@ func TestGetTask(t *testing.T) {
 	t.Run("wrong owner", func(t *testing.T) {
 		mockSvc.EXPECT().GetTask(gomock.Any(), uint(456)).Return(&model.Task{
 			ID:     456,
-			UserID: 99, // different user
+			UserID: 99,
 			Title:  "Oops",
 		}, nil)
 
@@ -129,5 +129,77 @@ func TestListTaskss(t *testing.T) {
 		router.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusOK, w.Code)
+	})
+}
+
+func TestUpdateTask(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSvc := mock_service.NewMockTaskService(ctrl)
+	h := handler.NewTaskHandler(mockSvc)
+
+	router := gin.Default()
+	router.PUT("/tasks/:id", func(c *gin.Context) {
+		c.Set("userID", uint(1))
+		h.UpdateTask(c)
+	})
+
+	t.Run("success", func(t *testing.T) {
+		mockSvc.EXPECT().GetTask(gomock.Any(), uint(10)).Return(&model.Task{
+			ID:     10,
+			UserID: 1,
+			Title:  "Old",
+			Status: model.TaskStatusPending,
+		}, nil)
+
+		mockSvc.EXPECT().UpdateTask(gomock.Any(), gomock.AssignableToTypeOf(&model.Task{})).
+			Return(nil)
+
+		body := `{"title":"New Title","status":"done"}`
+		req, _ := http.NewRequest(http.MethodPut, "/tasks/10", strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusOK, w.Code)
+	})
+
+	t.Run("invalid status", func(t *testing.T) {
+		body := `{"status":"weird"}`
+		req, _ := http.NewRequest(http.MethodPut, "/tasks/10", strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+
+	t.Run("not found", func(t *testing.T) {
+		mockSvc.EXPECT().GetTask(gomock.Any(), uint(999)).Return(nil, nil)
+
+		req, _ := http.NewRequest(http.MethodPut, "/tasks/999", strings.NewReader(`{}`))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusNotFound, w.Code)
+	})
+
+	t.Run("forbidden", func(t *testing.T) {
+		mockSvc.EXPECT().GetTask(gomock.Any(), uint(456)).Return(&model.Task{
+			ID:     456,
+			UserID: 777,
+			Title:  "X",
+		}, nil)
+
+		req, _ := http.NewRequest(http.MethodPut, "/tasks/456", strings.NewReader(`{"title":"abc"}`))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusForbidden, w.Code)
 	})
 }
