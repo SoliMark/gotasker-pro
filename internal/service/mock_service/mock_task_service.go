@@ -49,6 +49,20 @@ func (mr *MockTaskServiceMockRecorder) CreateTask(ctx, task interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTask", reflect.TypeOf((*MockTaskService)(nil).CreateTask), ctx, task)
 }
 
+// DeleteTask mocks base method.
+func (m *MockTaskService) DeleteTask(ctx context.Context, userID, taskID uint) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteTask", ctx, userID, taskID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteTask indicates an expected call of DeleteTask.
+func (mr *MockTaskServiceMockRecorder) DeleteTask(ctx, userID, taskID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTask", reflect.TypeOf((*MockTaskService)(nil).DeleteTask), ctx, userID, taskID)
+}
+
 // GetTask mocks base method.
 func (m *MockTaskService) GetTask(ctx context.Context, id uint) (*model.Task, error) {
 	m.ctrl.T.Helper()

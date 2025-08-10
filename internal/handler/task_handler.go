@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -39,7 +40,7 @@ type UpdateTaskRequest struct {
 func (h *TaskHandler) CreateTask(c *gin.Context) {
 	var req CreateTaskRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invaild request"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 
@@ -140,11 +141,12 @@ func (h *TaskHandler) UpdateTask(c *gin.Context) {
 	var taskID uint
 	if err := util.ParseUintParam(c, "id", &taskID); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid task ID"})
+		return
 	}
 
 	var req UpdateTaskRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invaild request"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 
@@ -192,4 +194,34 @@ func (h *TaskHandler) UpdateTask(c *gin.Context) {
 		Content: task.Content,
 		Status:  task.Status,
 	})
+}
+
+// internal/handler/task_handler.go
+func (h *TaskHandler) DeleteTask(c *gin.Context) {
+	userIDVal, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	uid := userIDVal.(uint)
+
+	var taskID uint
+	if err := util.ParseUintParam(c, "id", &taskID); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid task ID"})
+		return
+	}
+
+	if err := h.taskService.DeleteTask(c.Request.Context(), uid, taskID); err != nil {
+		switch {
+		case errors.Is(err, service.ErrTaskNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"error": "task not found"})
+		case errors.Is(err, service.ErrPermissionDenied):
+			c.JSON(http.StatusForbidden, gin.H{"error": "permission denied"})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete task"})
+		}
+		return
+	}
+
+	c.Status(http.StatusNoContent) // 204, 無 body
 }

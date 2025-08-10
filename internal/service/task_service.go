@@ -9,11 +9,17 @@ import (
 	"github.com/SoliMark/gotasker-pro/internal/repository"
 )
 
+var (
+	ErrTaskNotFound     = errors.New("task not found")
+	ErrPermissionDenied = errors.New("permission denied")
+)
+
 type TaskService interface {
 	CreateTask(ctx context.Context, task *model.Task) error
 	GetTask(ctx context.Context, id uint) (*model.Task, error)
 	ListTasks(ctx context.Context, userID uint) ([]*model.Task, error)
 	UpdateTask(ctx context.Context, task *model.Task) error
+	DeleteTask(ctx context.Context, userID, taskID uint) error
 }
 
 type taskService struct {
@@ -44,4 +50,18 @@ func (s *taskService) UpdateTask(ctx context.Context, task *model.Task) error {
 		return errors.New("title is required")
 	}
 	return s.repo.UpdateTask(ctx, task)
+}
+
+func (s *taskService) DeleteTask(ctx context.Context, userID, taskID uint) error {
+	t, err := s.repo.FindByID(ctx, taskID)
+	if err != nil {
+		return err
+	}
+	if t == nil {
+		return ErrTaskNotFound
+	}
+	if t.UserID != userID {
+		return ErrPermissionDenied
+	}
+	return s.repo.DeleteTask(ctx, taskID)
 }
