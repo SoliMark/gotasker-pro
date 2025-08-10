@@ -30,6 +30,12 @@ type TaskResponse struct {
 	Status  string `json:"status"`
 }
 
+type UpdateTaskRequest struct {
+	Title   *string `json:"title"`
+	Content *string `json:"content"`
+	Status  *string `json:"status"` // must be "pending" or "done" if provided
+}
+
 func (h *TaskHandler) CreateTask(c *gin.Context) {
 	var req CreateTaskRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -122,4 +128,68 @@ func (h *TaskHandler) ListTasks(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, res)
+}
+
+func (h *TaskHandler) UpdateTask(c *gin.Context) {
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	var taskID uint
+	if err := util.ParseUintParam(c, "id", &taskID); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid task ID"})
+	}
+
+	var req UpdateTaskRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invaild request"})
+		return
+	}
+
+	if req.Status != nil &&
+		*req.Status != model.TaskStatusPending &&
+		*req.Status != model.TaskStatusDone {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid status"})
+		return
+	}
+
+	task, err := h.taskService.GetTask(c.Request.Context(), taskID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get task"})
+		return
+	}
+
+	if task == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "task not found"})
+		return
+	}
+
+	if task.UserID != userID.(uint) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "permission denied"})
+		return
+	}
+
+	if req.Title != nil {
+		task.Title = *req.Title
+	}
+	if req.Content != nil {
+		task.Content = *req.Content
+	}
+	if req.Status != nil {
+		task.Status = *req.Status
+	}
+
+	if err := h.taskService.UpdateTask(c.Request.Context(), task); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update task"})
+		return
+	}
+
+	c.JSON(http.StatusOK, TaskResponse{
+		ID:      task.ID,
+		Title:   task.Title,
+		Content: task.Content,
+		Status:  task.Status,
+	})
 }
