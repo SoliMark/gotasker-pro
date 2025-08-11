@@ -12,3 +12,8 @@ type Task struct {
 	UpdatedAt time.Time
 	DeletedAt *time.Time `gorm:"index"`
 }
+
+const (
+	TaskStatusPending = "pending"
+	TaskStatusDone    = "done"
+)

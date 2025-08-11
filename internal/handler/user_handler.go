@@ -48,7 +48,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 	var req RegisterRequest
 	if err := c.ShouldBindBodyWithJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: "Invaild request:" + err.Error(),
+			Error: "invalid request:" + err.Error(),
 		})
 		return
 	}
@@ -81,7 +81,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 	var req LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: "Invaild request: " + err.Error(),
+			Error: "invalid request: " + err.Error(),
 		})
 		return
 	}
