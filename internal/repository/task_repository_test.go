@@ -4,11 +4,12 @@ import (
 	"context"
 	"testing"
 
-	"github.com/SoliMark/gotasker-pro/internal/model"
-	"github.com/SoliMark/gotasker-pro/internal/repository"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+
+	"github.com/SoliMark/gotasker-pro/internal/model"
+	"github.com/SoliMark/gotasker-pro/internal/repository"
 )
 
 // 使用 SQLite 的 in-memory DB 初始化

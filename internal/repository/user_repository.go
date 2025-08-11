@@ -3,8 +3,10 @@ package repository
 import (
 	"context"
 	"errors"
-	"github.com/SoliMark/gotasker-pro/internal/model"
+
 	"gorm.io/gorm"
+
+	"github.com/SoliMark/gotasker-pro/internal/model"
 )
 
 type UserRepository interface {

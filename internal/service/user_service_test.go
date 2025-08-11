@@ -4,12 +4,13 @@ import (
 	"context"
 	"testing"
 
-	"github.com/SoliMark/gotasker-pro/internal/model"
-	"github.com/SoliMark/gotasker-pro/internal/repository/mock_repository"
-	"github.com/SoliMark/gotasker-pro/internal/util"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/SoliMark/gotasker-pro/internal/model"
+	"github.com/SoliMark/gotasker-pro/internal/repository/mock_repository"
+	"github.com/SoliMark/gotasker-pro/internal/util"
 )
 
 func TestCreateUser_Success(t *testing.T) {

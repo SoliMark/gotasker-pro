@@ -8,16 +8,17 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gin-gonic/gin"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/SoliMark/gotasker-pro/internal/constant"
 	"github.com/SoliMark/gotasker-pro/internal/handler"
 	"github.com/SoliMark/gotasker-pro/internal/middleware"
 	"github.com/SoliMark/gotasker-pro/internal/service"
 	"github.com/SoliMark/gotasker-pro/internal/service/mock_service"
 	"github.com/SoliMark/gotasker-pro/internal/util"
-	"github.com/gin-gonic/gin"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestUserHandler_Register_Success(t *testing.T) {
