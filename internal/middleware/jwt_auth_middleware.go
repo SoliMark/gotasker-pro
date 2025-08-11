@@ -4,9 +4,10 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/gin-gonic/gin"
+
 	"github.com/SoliMark/gotasker-pro/internal/constant"
 	"github.com/SoliMark/gotasker-pro/internal/util"
-	"github.com/gin-gonic/gin"
 )
 
 type JWTMiddleware = gin.HandlerFunc

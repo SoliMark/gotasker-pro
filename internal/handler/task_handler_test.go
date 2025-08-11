@@ -7,13 +7,14 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/gin-gonic/gin"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/SoliMark/gotasker-pro/internal/handler"
 	"github.com/SoliMark/gotasker-pro/internal/model"
 	"github.com/SoliMark/gotasker-pro/internal/service"
 	"github.com/SoliMark/gotasker-pro/internal/service/mock_service"
-	"github.com/gin-gonic/gin"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateTask(t *testing.T) {

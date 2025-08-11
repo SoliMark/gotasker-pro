@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/SoliMark/gotasker-pro/internal/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+
+	"github.com/SoliMark/gotasker-pro/internal/model"
 )
 
 func NewDB(dsn string) (*gorm.DB, error) {

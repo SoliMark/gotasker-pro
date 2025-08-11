@@ -3,9 +3,10 @@ package main
 import (
 	"log"
 
+	"github.com/gin-gonic/gin"
+
 	"github.com/SoliMark/gotasker-pro/internal/app"
 	"github.com/SoliMark/gotasker-pro/internal/router"
-	"github.com/gin-gonic/gin"
 )
 
 func main() {

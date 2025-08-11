@@ -2,8 +2,10 @@ package repository
 
 import (
 	"context"
-	"github.com/SoliMark/gotasker-pro/internal/model"
+
 	"gorm.io/gorm"
+
+	"github.com/SoliMark/gotasker-pro/internal/model"
 )
 
 type TaskRepository interface {

@@ -3,9 +3,10 @@ package handler
 import (
 	"net/http"
 
+	"github.com/gin-gonic/gin"
+
 	"github.com/SoliMark/gotasker-pro/internal/model"
 	"github.com/SoliMark/gotasker-pro/internal/service"
-	"github.com/gin-gonic/gin"
 )
 
 type UserHandler struct {

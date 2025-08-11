@@ -1,6 +1,8 @@
 package app
 
 import (
+	"gorm.io/gorm"
+
 	"github.com/SoliMark/gotasker-pro/config"
 	"github.com/SoliMark/gotasker-pro/internal/db"
 	"github.com/SoliMark/gotasker-pro/internal/handler"
@@ -8,7 +10,6 @@ import (
 	"github.com/SoliMark/gotasker-pro/internal/repository"
 	"github.com/SoliMark/gotasker-pro/internal/service"
 	"github.com/SoliMark/gotasker-pro/internal/util"
-	"gorm.io/gorm"
 )
 
 type Container struct {
