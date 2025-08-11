@@ -1,0 +1,40 @@
+name: Imports Check
+
+on:
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - '**/*.go'
+  push:
+    branches: [ main, master, feature/** ]
+    paths:
+      - '**/*.go'
+
+jobs:
+  imports:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Install goimports-reviser
+        run: go install github.com/incu6us/goimports-reviser/v3@v3.6.4
+
+      - name: Check imports ordering & cleanup
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=$(git ls-files '*.go' | grep -Ev '(zz_generated|mock_.*\.go|_gen\.go)$' || true)
+          if [ -n "$files" ]; then
+            for f in $files; do
+              goimports-reviser -rm-unused -set-alias -format \
+                -company-prefixes=github.com/SoliMark \
+                -project-name=github.com/SoliMark/gotasker-pro "$f"
+            done
+          fi
+          git diff --exit-code
