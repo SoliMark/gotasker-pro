@@ -92,3 +92,9 @@ restart: down up
 
 logs:
 	docker compose logs -f
+
+imports:
+	go install github.com/incu6us/goimports-reviser/v3@v3.6.4
+	git ls-files '*.go' | xargs -n1 -I{} goimports-reviser -rm-unused -set-alias -format \
+	  -company-prefixes=github.com/SoliMark \
+	  -project-name=github.com/SoliMark/gotasker-pro {}

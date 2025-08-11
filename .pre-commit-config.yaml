@@ -50,3 +50,17 @@ repos:
       name: Generate gomock files
       entry: make mocks
       language: system
+
+ # --- goimports-reviser: enforce import groups/order/alias ---
+    - id: goimports-reviser
+      name: goimports-reviser (imports order & cleanup)
+      entry: goimports-reviser
+      language: system
+      types: [go]
+      args:
+        - -rm-unused
+        - -set-alias
+        - -format
+        - -company-prefixes=github.com/SoliMark
+        - -project-name=github.com/SoliMark/gotasker-pro
+      exclude: '(zz_generated|mock_.*\.go|_gen\.go)$'
