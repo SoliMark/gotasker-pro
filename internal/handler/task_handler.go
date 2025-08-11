@@ -196,7 +196,6 @@ func (h *TaskHandler) UpdateTask(c *gin.Context) {
 	})
 }
 
-// internal/handler/task_handler.go
 func (h *TaskHandler) DeleteTask(c *gin.Context) {
 	userIDVal, exists := c.Get("userID")
 	if !exists {
@@ -223,5 +222,5 @@ func (h *TaskHandler) DeleteTask(c *gin.Context) {
 		return
 	}
 
-	c.Status(http.StatusNoContent) // 204, 無 body
+	c.AbortWithStatus(http.StatusNoContent)
 }
