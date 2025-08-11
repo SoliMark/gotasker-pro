@@ -1,6 +1,7 @@
 package handler_test
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/SoliMark/gotasker-pro/internal/handler"
 	"github.com/SoliMark/gotasker-pro/internal/model"
+	"github.com/SoliMark/gotasker-pro/internal/service"
 	"github.com/SoliMark/gotasker-pro/internal/service/mock_service"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
@@ -201,5 +203,133 @@ func TestUpdateTask(t *testing.T) {
 		w := httptest.NewRecorder()
 		router.ServeHTTP(w, req)
 		assert.Equal(t, http.StatusForbidden, w.Code)
+	})
+}
+
+func TestDeleteTask(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	t.Run("invalid id -> 400", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockSvc := mock_service.NewMockTaskService(ctrl)
+
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		req := httptest.NewRequest(http.MethodDelete, "/tasks/abc", nil)
+		c.Request = req
+		c.Params = gin.Params{{Key: "id", Value: "abc"}}
+		c.Set("userID", uint(1))
+
+		h := handler.NewTaskHandler(mockSvc)
+		h.DeleteTask(c)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+
+	t.Run("unauthorized -> 401", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockSvc := mock_service.NewMockTaskService(ctrl)
+
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		req := httptest.NewRequest(http.MethodDelete, "/tasks/1", nil)
+		c.Request = req
+		c.Params = gin.Params{{Key: "id", Value: "1"}}
+
+		h := handler.NewTaskHandler(mockSvc)
+		h.DeleteTask(c)
+
+		assert.Equal(t, http.StatusUnauthorized, w.Code)
+	})
+
+	t.Run("not found -> 404", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockSvc := mock_service.NewMockTaskService(ctrl)
+
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		req := httptest.NewRequest(http.MethodDelete, "/tasks/1", nil)
+		c.Request = req
+		c.Params = gin.Params{{Key: "id", Value: "1"}}
+		c.Set("userID", uint(1))
+
+		mockSvc.EXPECT().
+			DeleteTask(gomock.Any(), uint(1), uint(1)).
+			Return(service.ErrTaskNotFound)
+
+		h := handler.NewTaskHandler(mockSvc)
+		h.DeleteTask(c)
+
+		assert.Equal(t, http.StatusNotFound, w.Code)
+	})
+
+	t.Run("permission denied -> 403", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockSvc := mock_service.NewMockTaskService(ctrl)
+
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		req := httptest.NewRequest(http.MethodDelete, "/tasks/2", nil)
+		c.Request = req
+		c.Params = gin.Params{{Key: "id", Value: "2"}}
+		c.Set("userID", uint(1))
+
+		mockSvc.EXPECT().
+			DeleteTask(gomock.Any(), uint(1), uint(2)).
+			Return(service.ErrPermissionDenied)
+
+		h := handler.NewTaskHandler(mockSvc)
+		h.DeleteTask(c)
+
+		assert.Equal(t, http.StatusForbidden, w.Code)
+	})
+
+	t.Run("repo/internal error -> 500", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockSvc := mock_service.NewMockTaskService(ctrl)
+
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		req := httptest.NewRequest(http.MethodDelete, "/tasks/3", nil)
+		c.Request = req
+		c.Params = gin.Params{{Key: "id", Value: "3"}}
+		c.Set("userID", uint(1))
+
+		mockSvc.EXPECT().
+			DeleteTask(gomock.Any(), uint(1), uint(3)).
+			Return(errors.New("DB error"))
+
+		h := handler.NewTaskHandler(mockSvc)
+		h.DeleteTask(c)
+
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
+	})
+
+	t.Run("success -> 204 no content", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockSvc := mock_service.NewMockTaskService(ctrl)
+
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		req := httptest.NewRequest(http.MethodDelete, "/tasks/10", nil)
+		c.Request = req
+		c.Params = gin.Params{{Key: "id", Value: "10"}}
+		c.Set("userID", uint(1))
+
+		mockSvc.EXPECT().
+			DeleteTask(gomock.Any(), uint(1), uint(10)).
+			Return(nil)
+
+		h := handler.NewTaskHandler(mockSvc)
+		h.DeleteTask(c)
+
+		assert.Equal(t, http.StatusNoContent, w.Code)
+		assert.Equal(t, "", w.Body.String())
 	})
 }
