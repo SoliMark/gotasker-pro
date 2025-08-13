@@ -17,6 +17,7 @@ func resetConfig() {
 func TestLoadConfig_WithEnvVars(t *testing.T) {
 	t.Setenv("PORT", "9999")
 	t.Setenv("DB_URL", "postgres://localhost:5432/testdb")
+	t.Setenv("JWT_SECRET", "test-secret")
 
 	resetConfig()
 
@@ -28,6 +29,7 @@ func TestLoadConfig_WithEnvVars(t *testing.T) {
 
 func TestLoadConfig_FallbackPort(t *testing.T) {
 	t.Setenv("DB_URL", "postgres://localhost:5432/testdb")
+	t.Setenv("JWT_SECRET", "test-secret")
 
 	resetConfig()
 	c, err := LoadConfig()
