@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -18,7 +19,7 @@ func TestTaskService_CreateTask(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mock_repository.NewMockTaskRepository(ctrl)
-	svc := service.NewTaskService(mockRepo)
+	svc := service.NewTaskService(mockRepo, nil, 60*time.Second) // No cache for basic tests
 	ctx := context.Background()
 
 	t.Run("success", func(t *testing.T) {
@@ -49,7 +50,7 @@ func TestTaskService_UpdateTask(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mock_repository.NewMockTaskRepository(ctrl)
-	svc := service.NewTaskService(mockRepo)
+	svc := service.NewTaskService(mockRepo, nil, 60*time.Second) // No cache for basic tests
 	ctx := context.Background()
 
 	t.Run("success", func(t *testing.T) {
@@ -93,7 +94,7 @@ func TestTaskService_DeleteTask(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mock_repository.NewMockTaskRepository(ctrl)
-	svc := service.NewTaskService(mockRepo)
+	svc := service.NewTaskService(mockRepo, nil, 60*time.Second) // No cache for basic tests
 	ctx := context.Background()
 
 	t.Run("success", func(t *testing.T) {
