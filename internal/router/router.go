@@ -17,8 +17,15 @@ func SetupRoutes(r *gin.Engine, c *app.Container) {
 	{
 		// User Profile
 		api.GET("/profile", c.UserHandler.Profile)
-		// Future: Task CRUD example
-		//api.GET("/task",taskHandler.ListTask)
-	}
 
+		// Task CRUD
+		tasks := api.Group("/tasks")
+		{
+			tasks.POST("", c.TaskHandler.CreateTask)
+			tasks.GET("", c.TaskHandler.ListTasks)
+			tasks.GET("/:id", c.TaskHandler.GetTask)
+			tasks.PUT("/:id", c.TaskHandler.UpdateTask)
+			tasks.DELETE("/:id", c.TaskHandler.DeleteTask)
+		}
+	}
 }
