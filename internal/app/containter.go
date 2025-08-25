@@ -1,6 +1,7 @@
 package app
 
 import (
+	redis "github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
 	"github.com/SoliMark/gotasker-pro/config"
@@ -15,12 +16,10 @@ import (
 type Container struct {
 	Config        *config.Config
 	DB            *gorm.DB
+	RedisClient   *redis.Client
 	JWTMiddleware middleware.JWTMiddleware
 	UserHandler   *handler.UserHandler
-
-	// TODO:
-	// RedisClient   *redis.Client
-	// TaskHandler   *handler.TaskHandler
+	TaskHandler   *handler.TaskHandler
 }
 
 func InitApp() (*Container, error) {
@@ -40,15 +39,28 @@ func InitApp() (*Container, error) {
 	jwtMaker := util.NewJWTMaker(cfg.JWTSecret)
 	jwtMiddleware := middleware.JWTAuthMiddleware(jwtMaker)
 
+	// Init Redis (optional)
+	var redisClient *redis.Client
+	if cfg.RedisEnabled() {
+		redisClient = db.NewRedisClient(cfg.RedisAddr, cfg.RedisPassword, cfg.RedisDB)
+	}
+
 	// Init Repository → Service → Handler
 	userRepo := repository.NewUserRepository(dbConn)
 	userService := service.NewUserService(userRepo, jwtMaker)
 	userHandler := handler.NewUserHandler(userService)
 
+	// Init Task components
+	taskRepo := repository.NewTaskRepository(dbConn)
+	taskService := service.NewTaskService(taskRepo, redisClient, cfg.CacheTTLTasks)
+	taskHandler := handler.NewTaskHandler(taskService)
+
 	return &Container{
 		Config:        cfg,
 		DB:            dbConn,
+		RedisClient:   redisClient,
 		JWTMiddleware: jwtMiddleware,
 		UserHandler:   userHandler,
+		TaskHandler:   taskHandler,
 	}, nil
 }

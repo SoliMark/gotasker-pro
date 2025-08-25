@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"sync"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/mitchellh/mapstructure"
@@ -15,6 +16,12 @@ type Config struct {
 	AppPort   string `mapstructure:"PORT"`       // default: 8080
 	DBURL     string `mapstructure:"DB_URL"`     // required
 	JWTSecret string `mapstructure:"JWT_SECRET"` // required
+
+	// Redis cache for task list
+	RedisAddr     string        `mapstructure:"REDIS_ADDR"`      // default: localhost:6379
+	RedisPassword string        `mapstructure:"REDIS_PASSWORD"`  // default: ""
+	RedisDB       int           `mapstructure:"REDIS_DB"`        // default: 0
+	CacheTTLTasks time.Duration `mapstructure:"CACHE_TTL_TASKS"` // default: 60s (supports "1m", "45s", etc.)
 }
 
 var (
@@ -48,9 +55,21 @@ func LoadConfig() (*Config, error) {
 		// Defaults — safe fallbacks for local/dev.
 		v.SetDefault("PORT", "8080")
 
+		// Redis cache for task list
+		v.SetDefault("REDIS_ADDR", "localhost:6379")
+		v.SetDefault("REDIS_PASSWORD", "")
+		v.SetDefault("REDIS_DB", 0)
+		v.SetDefault("CACHE_TTL_TASKS", "60s")
+
 		_ = v.BindEnv("PORT")
 		_ = v.BindEnv("DB_URL")
 		_ = v.BindEnv("JWT_SECRET")
+
+		// Redis cache for task list
+		_ = v.BindEnv("REDIS_ADDR")
+		_ = v.BindEnv("REDIS_PASSWORD")
+		_ = v.BindEnv("REDIS_DB")
+		_ = v.BindEnv("CACHE_TTL_TASKS")
 		var c Config
 		// Enable time.Duration decoding from strings like "60s", "1m".
 		if err := v.Unmarshal(&c, viper.DecodeHook(
@@ -78,3 +97,6 @@ func LoadConfig() (*Config, error) {
 	}
 	return cfg, nil
 }
+
+// Optional helpers (nice-to-have)
+func (c *Config) RedisEnabled() bool { return c != nil && c.RedisAddr != "" }
