@@ -217,3 +217,181 @@ func TestTaskService_ListTasks_Singleflight(t *testing.T) {
 		}
 	})
 }
+
+func TestTaskService_CreateTask_CacheInvalidation(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mock_repository.NewMockTaskRepository(ctrl)
+
+	// Create a miniredis mock server
+	mr, err := miniredis.Run()
+	require.NoError(t, err)
+	defer mr.Close()
+
+	// Create Redis client connected to miniredis
+	rdb := redis.NewClient(&redis.Options{
+		Addr: mr.Addr(),
+	})
+	defer rdb.Close()
+
+	userID := uint(1)
+	newTask := &model.Task{
+		UserID: userID,
+		Title:  "New Task",
+		Status: model.TaskStatusPending,
+	}
+
+	// Pre-populate cache
+	key := cache.KeyUserTasks(userID)
+	existingTasks := []*model.Task{
+		{ID: 1, UserID: userID, Title: "Existing Task", Status: model.TaskStatusDone},
+	}
+	cachedData, err := json.Marshal(existingTasks)
+	require.NoError(t, err)
+	err = rdb.Set(context.Background(), key, cachedData, 60*time.Second).Err()
+	require.NoError(t, err)
+
+	service := service.NewTaskService(mockRepo, rdb, 60*time.Second)
+
+	// Expect repository call for task creation
+	mockRepo.EXPECT().
+		CreateTask(gomock.Any(), newTask).
+		Return(nil)
+
+	// Create task
+	err = service.CreateTask(context.Background(), newTask)
+	require.NoError(t, err)
+
+	// Verify cache was invalidated
+	_, err = rdb.Get(context.Background(), key).Result()
+	assert.Error(t, err) // Should return error as key should be deleted
+}
+
+func TestTaskService_UpdateTask_CacheInvalidation(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mock_repository.NewMockTaskRepository(ctrl)
+
+	// Create a miniredis mock server
+	mr, err := miniredis.Run()
+	require.NoError(t, err)
+	defer mr.Close()
+
+	// Create Redis client connected to miniredis
+	rdb := redis.NewClient(&redis.Options{
+		Addr: mr.Addr(),
+	})
+	defer rdb.Close()
+
+	userID := uint(1)
+	updatedTask := &model.Task{
+		ID:     1,
+		UserID: userID,
+		Title:  "Updated Task",
+		Status: model.TaskStatusDone,
+	}
+
+	// Pre-populate cache
+	key := cache.KeyUserTasks(userID)
+	existingTasks := []*model.Task{
+		{ID: 1, UserID: userID, Title: "Original Task", Status: model.TaskStatusPending},
+	}
+	cachedData, err := json.Marshal(existingTasks)
+	require.NoError(t, err)
+	err = rdb.Set(context.Background(), key, cachedData, 60*time.Second).Err()
+	require.NoError(t, err)
+
+	service := service.NewTaskService(mockRepo, rdb, 60*time.Second)
+
+	// Expect repository call for task update
+	mockRepo.EXPECT().
+		UpdateTask(gomock.Any(), updatedTask).
+		Return(nil)
+
+	// Update task
+	err = service.UpdateTask(context.Background(), updatedTask)
+	require.NoError(t, err)
+
+	// Verify cache was invalidated
+	_, err = rdb.Get(context.Background(), key).Result()
+	assert.Error(t, err) // Should return error as key should be deleted
+}
+
+func TestTaskService_DeleteTask_CacheInvalidation(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mock_repository.NewMockTaskRepository(ctrl)
+
+	// Create a miniredis mock server
+	mr, err := miniredis.Run()
+	require.NoError(t, err)
+	defer mr.Close()
+
+	// Create Redis client connected to miniredis
+	rdb := redis.NewClient(&redis.Options{
+		Addr: mr.Addr(),
+	})
+	defer rdb.Close()
+
+	userID := uint(1)
+	taskID := uint(1)
+
+	// Pre-populate cache
+	key := cache.KeyUserTasks(userID)
+	existingTasks := []*model.Task{
+		{ID: 1, UserID: userID, Title: "Task to Delete", Status: model.TaskStatusPending},
+		{ID: 2, UserID: userID, Title: "Another Task", Status: model.TaskStatusDone},
+	}
+	cachedData, err := json.Marshal(existingTasks)
+	require.NoError(t, err)
+	err = rdb.Set(context.Background(), key, cachedData, 60*time.Second).Err()
+	require.NoError(t, err)
+
+	service := service.NewTaskService(mockRepo, rdb, 60*time.Second)
+
+	// Expect repository calls for task deletion
+	existingTask := &model.Task{ID: taskID, UserID: userID, Title: "Task to Delete"}
+	mockRepo.EXPECT().
+		FindByID(gomock.Any(), taskID).
+		Return(existingTask, nil)
+	mockRepo.EXPECT().
+		DeleteTask(gomock.Any(), taskID).
+		Return(nil)
+
+	// Delete task
+	err = service.DeleteTask(context.Background(), userID, taskID)
+	require.NoError(t, err)
+
+	// Verify cache was invalidated
+	_, err = rdb.Get(context.Background(), key).Result()
+	assert.Error(t, err) // Should return error as key should be deleted
+}
+
+func TestTaskService_CacheInvalidation_WhenCacheDisabled(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mock_repository.NewMockTaskRepository(ctrl)
+
+	// Service without Redis (cache disabled)
+	service := service.NewTaskService(mockRepo, nil, 60*time.Second)
+
+	userID := uint(1)
+	newTask := &model.Task{
+		UserID: userID,
+		Title:  "New Task",
+		Status: model.TaskStatusPending,
+	}
+
+	// Expect repository call for task creation
+	mockRepo.EXPECT().
+		CreateTask(gomock.Any(), newTask).
+		Return(nil)
+
+	// Should not panic when cache is disabled
+	err := service.CreateTask(context.Background(), newTask)
+	require.NoError(t, err)
+}

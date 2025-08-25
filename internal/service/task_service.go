@@ -48,7 +48,14 @@ func (s *taskService) CreateTask(ctx context.Context, task *model.Task) error {
 	if task.Title == "" {
 		return errors.New("title is required")
 	}
-	return s.repo.CreateTask(ctx, task)
+
+	err := s.repo.CreateTask(ctx, task)
+	if err == nil && s.rdb != nil {
+		// Invalidate user's task cache after successful creation
+		key := cache.KeyUserTasks(task.UserID)
+		_ = s.rdb.Del(ctx, key).Err()
+	}
+	return err
 }
 
 func (s *taskService) GetTask(ctx context.Context, id uint) (*model.Task, error) {
@@ -101,7 +108,14 @@ func (s *taskService) UpdateTask(ctx context.Context, task *model.Task) error {
 	if strings.TrimSpace(task.Title) == "" {
 		return errors.New("title is required")
 	}
-	return s.repo.UpdateTask(ctx, task)
+
+	err := s.repo.UpdateTask(ctx, task)
+	if err == nil && s.rdb != nil {
+		// Invalidate user's task cache after successful update
+		key := cache.KeyUserTasks(task.UserID)
+		_ = s.rdb.Del(ctx, key).Err()
+	}
+	return err
 }
 
 func (s *taskService) DeleteTask(ctx context.Context, userID, taskID uint) error {
@@ -115,5 +129,12 @@ func (s *taskService) DeleteTask(ctx context.Context, userID, taskID uint) error
 	if t.UserID != userID {
 		return ErrPermissionDenied
 	}
-	return s.repo.DeleteTask(ctx, taskID)
+
+	err = s.repo.DeleteTask(ctx, taskID)
+	if err == nil && s.rdb != nil {
+		// Invalidate user's task cache after successful deletion
+		key := cache.KeyUserTasks(userID)
+		_ = s.rdb.Del(ctx, key).Err()
+	}
+	return err
 }
