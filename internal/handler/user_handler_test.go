@@ -32,6 +32,7 @@ func TestUserHandler_Register_Success(t *testing.T) {
 	}
 
 	body := handler.RegisterRequest{
+		Username: "testuser",
 		Email:    "test@example.com",
 		Password: "plaintextpassword",
 	}
