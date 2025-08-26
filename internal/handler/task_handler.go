@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/SoliMark/gotasker-pro/internal/constant"
 	"github.com/SoliMark/gotasker-pro/internal/model"
 	"github.com/SoliMark/gotasker-pro/internal/service"
 	"github.com/SoliMark/gotasker-pro/internal/util"
@@ -44,7 +45,7 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 		return
 	}
 
-	userID, exists := c.Get("userID")
+	userID, exists := c.Get(constant.ContextUserIDKey)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
@@ -71,7 +72,7 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 }
 
 func (h *TaskHandler) GetTask(c *gin.Context) {
-	userID, exists := c.Get("userID")
+	userID, exists := c.Get(constant.ContextUserIDKey)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
@@ -107,7 +108,7 @@ func (h *TaskHandler) GetTask(c *gin.Context) {
 }
 
 func (h *TaskHandler) ListTasks(c *gin.Context) {
-	userID, exists := c.Get("userID")
+	userID, exists := c.Get(constant.ContextUserIDKey)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
@@ -132,7 +133,7 @@ func (h *TaskHandler) ListTasks(c *gin.Context) {
 }
 
 func (h *TaskHandler) UpdateTask(c *gin.Context) {
-	userID, exists := c.Get("userID")
+	userID, exists := c.Get(constant.ContextUserIDKey)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
@@ -197,7 +198,7 @@ func (h *TaskHandler) UpdateTask(c *gin.Context) {
 }
 
 func (h *TaskHandler) DeleteTask(c *gin.Context) {
-	userIDVal, exists := c.Get("userID")
+	userIDVal, exists := c.Get(constant.ContextUserIDKey)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return

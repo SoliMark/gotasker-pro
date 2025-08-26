@@ -11,6 +11,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/SoliMark/gotasker-pro/internal/constant"
 	"github.com/SoliMark/gotasker-pro/internal/handler"
 	"github.com/SoliMark/gotasker-pro/internal/model"
 	"github.com/SoliMark/gotasker-pro/internal/service"
@@ -26,7 +27,7 @@ func TestCreateTask(t *testing.T) {
 
 	router := gin.Default()
 	router.POST("/tasks", func(c *gin.Context) {
-		c.Set("userID", uint(1))
+		c.Set(constant.ContextUserIDKey, uint(1))
 		h.CreateTask(c)
 	})
 
@@ -64,7 +65,7 @@ func TestGetTask(t *testing.T) {
 
 	router := gin.Default()
 	router.GET("/tasks/:id", func(c *gin.Context) {
-		c.Set("userID", uint(1))
+		c.Set(constant.ContextUserIDKey, uint(1))
 		h.GetTask(c)
 	})
 
@@ -117,7 +118,7 @@ func TestListTaskss(t *testing.T) {
 
 	router := gin.Default()
 	router.GET("/tasks", func(c *gin.Context) {
-		c.Set("userID", uint(1))
+		c.Set(constant.ContextUserIDKey, uint(1))
 		h.ListTasks(c)
 	})
 
@@ -146,7 +147,7 @@ func TestUpdateTask(t *testing.T) {
 
 	router := gin.Default()
 	router.PUT("/tasks/:id", func(c *gin.Context) {
-		c.Set("userID", uint(1))
+		c.Set(constant.ContextUserIDKey, uint(1))
 		h.UpdateTask(c)
 	})
 
@@ -220,7 +221,7 @@ func TestDeleteTask(t *testing.T) {
 		req := httptest.NewRequest(http.MethodDelete, "/tasks/abc", nil)
 		c.Request = req
 		c.Params = gin.Params{{Key: "id", Value: "abc"}}
-		c.Set("userID", uint(1))
+		c.Set(constant.ContextUserIDKey, uint(1))
 
 		h := handler.NewTaskHandler(mockSvc)
 		h.DeleteTask(c)
@@ -255,7 +256,7 @@ func TestDeleteTask(t *testing.T) {
 		req := httptest.NewRequest(http.MethodDelete, "/tasks/1", nil)
 		c.Request = req
 		c.Params = gin.Params{{Key: "id", Value: "1"}}
-		c.Set("userID", uint(1))
+		c.Set(constant.ContextUserIDKey, uint(1))
 
 		mockSvc.EXPECT().
 			DeleteTask(gomock.Any(), uint(1), uint(1)).
@@ -277,7 +278,7 @@ func TestDeleteTask(t *testing.T) {
 		req := httptest.NewRequest(http.MethodDelete, "/tasks/2", nil)
 		c.Request = req
 		c.Params = gin.Params{{Key: "id", Value: "2"}}
-		c.Set("userID", uint(1))
+		c.Set(constant.ContextUserIDKey, uint(1))
 
 		mockSvc.EXPECT().
 			DeleteTask(gomock.Any(), uint(1), uint(2)).
@@ -299,7 +300,7 @@ func TestDeleteTask(t *testing.T) {
 		req := httptest.NewRequest(http.MethodDelete, "/tasks/3", nil)
 		c.Request = req
 		c.Params = gin.Params{{Key: "id", Value: "3"}}
-		c.Set("userID", uint(1))
+		c.Set(constant.ContextUserIDKey, uint(1))
 
 		mockSvc.EXPECT().
 			DeleteTask(gomock.Any(), uint(1), uint(3)).
@@ -321,7 +322,7 @@ func TestDeleteTask(t *testing.T) {
 		req := httptest.NewRequest(http.MethodDelete, "/tasks/10", nil)
 		c.Request = req
 		c.Params = gin.Params{{Key: "id", Value: "10"}}
-		c.Set("userID", uint(1))
+		c.Set(constant.ContextUserIDKey, uint(1))
 
 		mockSvc.EXPECT().
 			DeleteTask(gomock.Any(), uint(1), uint(10)).

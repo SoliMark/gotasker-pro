@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/SoliMark/gotasker-pro/internal/constant"
 	"github.com/SoliMark/gotasker-pro/internal/model"
 	"github.com/SoliMark/gotasker-pro/internal/service"
 )
@@ -100,7 +101,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 }
 
 func (h *UserHandler) Profile(c *gin.Context) {
-	userID, exists := c.Get("user_id")
+	userID, exists := c.Get(constant.ContextUserIDKey)
 	if !exists {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{
 			Error: "user_id not found in context",
