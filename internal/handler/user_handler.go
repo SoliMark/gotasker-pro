@@ -17,6 +17,7 @@ type UserHandler struct {
 // ==================== Register ====================
 
 type RegisterRequest struct {
+	Username string `json:"username" binding:"required"`
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required,min=8"`
 }
@@ -56,6 +57,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 	}
 
 	user := &model.User{
+		Username:     req.Username,
 		Email:        req.Email,
 		PasswordHash: req.Password,
 	}
